@@ -1,0 +1,55 @@
+int dune_init(bool map_full)
+	1、打开驱动设备：/dev/dune
+	2、分配一个页面大小为PGSIZE并且开始地址为PGSIZE的页，并初始化,为pgroot
+	3、调用setup_mappings(map_full);
+	4、setup_syscall();
+	5、除了sigstop,sigkill,sigchld,sigint,其他的信号都将忽略
+	6、setup_idt();
+
+static int setup_mappings(bool full)
+	1、由ioctl函数获得dune_layout,由/dune/kern/core.c提供，获得phys_limit,mmap_base,stack_base
+	2、根据full参数，如果为TRUE则调用__setup_mappings_full(layout),否则就调用__setup_mappings_precise();
+	
+static int __setup_mapping_precise(void)
+	1、dune_vm_map_phys(pgroot,PAGEBASE,MAX_PAGES*PGSIZE,dune_va_to_va(PAGEBASE),PERM_R,PERM_W,PERM_BIG);
+    2、调用dune_procmap_iterate(&__setup_mappings_cb):查看进程的虚拟空间是如何使用的，再调用函数
+
+static setup_mappings_cb(const struct dune_procmap_entry *ent)
+	1、进行ent的begin检查，防止page已经mapped
+	2、if(ent->begin == VSYSCALL_ADDR) setup_vsyscall();return;
+	3、if(ent->type==VSYSCALL_ADDR) setup_vdso(ent->begin,ent->end-ent->begin);return
+	4、dune_vm_map_phys(pgroot,ent->begin,ent->end-ent->begin,dune_va_to_pa(ent->begin),perm);
+
+static void setup_vdso(void *addr,size_t len)
+	VDSO就是Virtual Dynamic Shared Object，就是内核提供的虚拟的.so,这个.so文件不在磁盘上，而是在内核里头。内核把包含某.so的内存页在程序启动的时候映射入其内存空间，对应的程序就可以当普通的.so来使用里头的函数。比如syscall()这个函数就是在linux-vdso.so.1里头的，但是磁盘上并没有对应的文件.可以通过ldd/bin/bash看看。
+    // elf helper functions
+    1、struct dune_elf {
+    	int		fd;
+    	unsigned char	*mem;
+	    int		len;
+		Elf64_Ehdr	hdr;
+		Elf64_Phdr	*phdr;
+		Elf64_Shdr	*shdr;
+		char		*shdrstr;
+		void		*priv;
+	}elf;
+	2、struct dynsym {
+		char		*ds_name;
+		int		ds_idx;
+		int		ds_off;
+		struct dynsym	*ds_next;
+	}*ds,*d;
+    	
+
+
+static int __setup_mapping_full(void)
+	1、dune_vm_map_phys(pgroot,PAGEBASE,MAX_PAGES*PGSIZE,dune_va_to_va(PAGEBASE),PERM_R,PERM_W,PERM_BIG);
+	2、dune_vm_map_phys(pgroot,0,1UL<<32,0,PERM_R,PERM_W,PERM_BIG);
+	3、dune_vm_map_phys(pgroot,layout->basemap,MAX_PAGES*layout->basemap,dune_va_to_va(PAGEBASE),PERM_R|PERM_W|PERM_X|PERM|U);
+   	4、dune_vm_map_phys(pgroot,layout->basestack,MAX_PAGES*layout->basestack,dune_va_to_va(PAGEBASE),PERM_R|PERM_W|PERM_X|PERM|U);
+    5、dune_procmap_iterate(setup_vdso_cb);
+	6、setup_vsyscall();
+
+static void setup_vdso_cb(const struct dune_procmap_entry *ent)
+	if(ent->type==PROCMAP_TYPE_VDSO)  setup_vdso(...);
+
