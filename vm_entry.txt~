@@ -1,0 +1,2 @@
+1、由dune.S转入ioctl：DUNE_ENTER
+2、从用户复制dune_config的信息，

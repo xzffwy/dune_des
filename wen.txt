@@ -1,0 +1,1 @@
+1、/libdune/dune.S中的汇编__dune_enter调用函数怎么传递参数的？
