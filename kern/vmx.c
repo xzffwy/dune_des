@@ -8,7 +8,7 @@ static struct vmx_vcpu * vmx_create_vcpu(struct dune_config *conf)
 		int cpu;                              2、获得处理器的编号，分配vmcs区域
 		int vpid;                             3、为vcpu分配vpid,在vmx_vpid_bitmap基础上
 		int launched;                         4、//初始化vcpu的cpu为-1，和syscall_tbl
-                                              5、初始化ept，分配一个空闲页，将虚拟地址减去pageoffset赋值给
+                                              5、初始化ept，分配一个空闲页，返回物理地址
 		struct mmu_notifier mmu_notifier;        vcpu->ept_root
 		spinlock_t ept_lock;                  6、vcpu->eptp=construct_eptp(vcpu->ept_root);//不懂
 		unsigned long ept_root;               7、执行vmx_get_cpu(vcpu),用来加载current vmcs,并为vcpu的cpu指 
@@ -18,7 +18,7 @@ static struct vmx_vcpu * vmx_create_vcpu(struct dune_config *conf)
 		u8  fail;                             9、调用vmx_setup_initial_guest_state,检查guest-state区域赋值
 		u64 exit_reason;                      10、调用vmx_put_cpu使得preempt_enable
 		u64 host_rsp;                         11、判断cpu_has_vmx_ept_ad_bits
-		u64 regs[NR_VCPU_REGS];               12、vmx_create_ept(vcpu):调用mmu_notifier_register;
+		u64 regs[NR_VCPU_REGS];               12、vmx_create_ept(vcpu):调用mmu_notifier_register;//太乱了
 		u64 cr2;
 
 		int shutdown;
