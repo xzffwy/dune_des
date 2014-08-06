@@ -29,7 +29,8 @@ static int ept_invalidate_page(struct vmx_vcpu *vcpu,struct mm_struct *mm,unsign
 
 struct unsigned long hva_to_gpa(struct vmx_vcpu *vcpu,struct mm_struct *mm,
 		unsigned long hva)
-   //虚拟地址到客户机物理地址 
+    //怎样实现以及为什么是hva to gpa都不懂
+   //主机虚拟地址到客户机物理地址 
    
 static int ept_lookup_gpa(struct vmx_vcpu *vcpu,void *pga,int level,int create,epte_t **epte_out)
 	//对于扩展分页中的处理有bug

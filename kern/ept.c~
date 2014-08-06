@@ -29,7 +29,7 @@ static int ept_invalidate_page(struct vmx_vcpu *vcpu,struct mm_struct *mm,unsign
 
 struct unsigned long hva_to_gpa(struct vmx_vcpu *vcpu,struct mm_struct *mm,
 		unsigned long hva)
-   //虚拟地址到客户机物理地址 
+   //主机虚拟地址到客户机物理地址 
    
 static int ept_lookup_gpa(struct vmx_vcpu *vcpu,void *pga,int level,int create,epte_t **epte_out)
 	//对于扩展分页中的处理有bug
@@ -50,5 +50,5 @@ staitc void free_ept_page(epte_t epte)
 	1、获得page的地址，因为PAE，页的总大小为2MB，不是4kb
 	2、判断是否为PFN mappings，如果则不用回写
 	3、如果页面脏了，是需要回写的 set_page_dirty_lock(page);
-	4、put_page(page);
+	4、put_page(page);//释放页
 

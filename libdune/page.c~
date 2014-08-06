@@ -14,4 +14,3 @@ struct page * dune_page_alloc(void)
 	4、在以page_free为头的链表中去除pg所指的描述符
 	5、解锁
 	6、查看pg的地址范围，以及pg->ref++//代表占用的程序加1？？？？
-	7、返回pg
