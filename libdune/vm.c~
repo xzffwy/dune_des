@@ -19,3 +19,9 @@ static inline void * alloc_page(void)
 	1、调用dune_page_alloc(),返回一个页的描述符的物理地址//代表此页被程序使用？？？？？
 	2、调用dune_page2pa(pg)返回pg的虚拟地址
 
+int dune_vm_lookup(ptent_t *root, void *va,int create,ptent_t **ptent_out)
+	1、通过va获得一级二级三级四级页表的偏移量i,j,k,l
+	2、pml4为LDT，由va赋值
+	3、一次检测各级页表是否为空，如果为空，就为该项调用alloc_page()分配页面，并清空。并且还要注意扩展分页以及大页的分配
+	4、将最后找到的页面的指针赋值给*ptent_out
+

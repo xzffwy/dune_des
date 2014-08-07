@@ -3,8 +3,6 @@ static int elf_read(struct dune_elf *elf,void *dst,int len,int offset)
 	2、求需要读取的长度：为dr=min(elf->len-off,len);
 	3、赋值elf->mem的偏移量off开始的dr的长度为dst
 
-static int do_elf_open(struct dune_elf *elf)
-	1、elf_read函数，将elf中的东西读入Elf64_Ehdr hdr;
 typedef struct
 {
   unsigned char	e_ident[EI_NIDENT];	/* Magic number and other info */
@@ -36,16 +34,22 @@ typedef struct
   Elf64_Xword	sh_addralign;		/* Section alignment */
   Elf64_Xword	sh_entsize;		/* Entry size if section holds table */
 } Elf64_Shdr;
+typedef struct
+{
+  Elf64_Word	st_name;		/* Symbol name (string tbl index) */
+  unsigned char	st_info;		/* Symbol type and binding */
+  unsigned char st_other;		/* Symbol visibility */
+  Elf64_Section	st_shndx;		/* Section index */
+  Elf64_Addr	st_value;		/* Symbol value */
+  Elf64_Xword	st_size;		/* Symbol size */
+} Elf64_Sym;
 
-static int vdso_sh_cb(struct dune_elf *elf,const char *sname ,int snum,Elf64_Shdr *shdr)
-	//ds的理解不够充分
-    1、	如果shdr.sh_type为String table并且sname为".dynstr":
-	   1.1、ds=elf->prev
-	   1.2、循环对每个ds的ds_name重新指向一个新的地址:elf->mem+shdr->sh_offset+ds->ds_idx
-	2、如果shdr.sh_type为dynamic linker symbol table:
-	   2.1、求得shdr的size(len)和shdr的mem(s)
 	   
 int dune_elf_iter_sh(struct dune_elf *elf,dune_elf_shcb cb)
+	1、如果elf->shdr为空，就调用elf_open_shs(elf)分配shdr和shdrstr
+	2、对于elf->hdr的每个Section header table，*sname = elf->shdrstr+elf->shdr[i].sh_name
+
+static int elf_open_shs(struct dune_elf *elf)
 	//shdr为section head table  strtab为shdr的关于section table string table的部分
 	1、查看elf的shdr(section header)是否为空，如果空的话，就调用elf_open_shs(elf):首先检查setction header table entry size and count,然后求出总长度，将elf->mem(fd)开始的偏移量为elf->hdr.e_shoff的长度为求得的总长度写进shdr
     2、//检查elf->hdr.e_shstrndx>elf->hdr.e_shnum ,则错误
